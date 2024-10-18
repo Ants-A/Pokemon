@@ -1,7 +1,16 @@
-.input_card
+.input_card, .second_card, .first, .second
 {
-    margin-left: auto;
-    margin-right: auto;
     width: 50%;
     text-align: center;
+    position: absolute;
+}
+
+.input_card, .first
+{
+    left: 0%;
+}
+
+.second_card, .second
+{
+    right: 0%;
 }
