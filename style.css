@@ -14,3 +14,12 @@
 {
     right: 0%;
 }
+
+
+.fetch
+{
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    translate: -50%;
+}

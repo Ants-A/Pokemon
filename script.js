@@ -22,6 +22,7 @@ async function get_info()
     const data = await response.json();
     info = data;
     console.log(info);
+    document.querySelector("h1").innerHTML = "";
 
     document.querySelector(".first").disabled = false;
     document.querySelector(".second").disabled = false;
@@ -59,8 +60,6 @@ element_1.addEventListener("keydown", function(event)
 
 async function main(pokemon, data, id) 
 {
-    console.log(data);
-    console.log(pokemon);
     let input_pos = [undefined];
     let a = 0;
     for(let i = 0; i < data.count; i++)
@@ -150,6 +149,10 @@ image_element.addEventListener("click", function(event)
     if (event.target.tagName == "IMG")
     {
         pokemon_1_num = first_nums[event.target.id];
+        if(pokemon_2_num != undefined)
+        {
+            start_battle();
+        }
     }
 });
 
@@ -159,7 +162,19 @@ image_element_1.addEventListener("click", function(event)
     if (event.target.tagName == "IMG")
     {
         pokemon_2_num = second_nums[event.target.id];
+        if(pokemon_1_num != undefined)
+        {
+            start_battle();
+        }
     }
 });
 
+function start_battle()
+{
+    
+}
 
+/*const moves = 
+{
+    "Second Strike": "if(hp < hp_max){}"
+}*/
