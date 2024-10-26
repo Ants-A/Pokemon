@@ -169,12 +169,78 @@ image_element_1.addEventListener("click", function(event)
     }
 });
 
-function start_battle()
-{
-    
-}
 
 /*const moves = 
 {
     "Second Strike": "if(hp < hp_max){}"
 }*/
+
+let hp_max;
+let hp = hp_max;
+let post_turn_effect;
+let damage;
+
+let first_abilties = [];
+let second_abilities = [];
+const ability_colors = 
+{
+    Fire: "red",
+    Normal: "lightgray",
+    Water: "lightblue",
+    Electric: "yellow",
+    Grass: "green",
+    Ice: "lightblue",
+    Fighting: "darkred",
+    Poison: "purple",
+    Ground: "burlywood",
+    Flying: "mediumslateblue",
+    Psychic: "rgb(255, 122, 144)",
+    Bug: "limegreen",
+    Rock: "darkkhaki",
+    Ghost: "rgb(67, 0, 139)",
+    Dragon: "rgb(87, 0, 193)",
+    Dark: "rgb(87, 30, 30)",
+    Metal: "rgba(211, 211, 211, 0.908)",
+    Fairy: "pink"
+}
+function start_battle()
+{
+    let a = 0;
+    for(item of info.data[pokemon_2_num].attacks)
+    {
+        second_abilities[a] = item;
+        a++;
+    }
+
+    a = 0;
+    for(item of info.data[pokemon_1_num].attacks)
+    {
+        first_abilties[a] = item;
+        a++;
+    }
+
+
+    document.querySelector(".all").innerHTML = "";
+    const l_button = document.querySelector(".left_button");
+    const r_button = document.querySelector(".right_button");
+    console.log(first_abilties[0].cost[0]);
+
+    document.querySelector(".left_image").innerHTML = "<img src='" + info.data[pokemon_1_num].images.small + "'/>";
+    document.querySelector(".right_image").innerHTML = "<img src='" + info.data[pokemon_2_num].images.small + "'/>";
+
+    if(first_abilties[0] != undefined)
+    {
+        l_button.innerHTML += "<input class='left' id='left' type = 'button' value='" 
+        + first_abilties[0].name + "'/>";
+        document.getElementById("left").style.backgroundColor =
+        ability_colors[first_abilties[0].cost[0]];    
+    }
+
+    if (first_abilties[1] != undefined)
+    {
+        r_button.innerHTML += "<input class='right' id='right' type = 'button' value='" 
+        + first_abilties[1].name + "'/>";
+        document.getElementById("right").style.backgroundColor =
+        ability_colors[first_abilties[1].cost[0]];
+    }
+}
