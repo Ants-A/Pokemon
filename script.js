@@ -1,19 +1,7 @@
-// Mul pole kuhugi kirja panna so...
-/* 
-1. Võtan nime
-2. Annan nime järgi info kaardi kohta
-(image, nimi, type, health, moves, hind)
-
-3. Sisesta järgmine pokemon
-
-4. Alustab kaklust
-*/
 let info;
 let first_nums;
 let second_nums;
-
-document.querySelector(".first").disabled = true;
-document.querySelector(".second").disabled = true;
+let all_attacks = {data: []};
 
 async function get_info() 
 {
@@ -22,48 +10,66 @@ async function get_info()
     const data = await response.json();
     info = data;
     console.log(info);
-    document.querySelector("h1").innerHTML = "";
 
-    document.querySelector(".first").disabled = false;
-    document.querySelector(".second").disabled = false;
+    let i = 0;
     for (item of data.data)
     {
         if (item.attacks != undefined || 0)
         {
-            console.log(item.attacks)
+            all_attacks.data[i] = item.attacks;
+            i++;
         }
     }
-    deal_damage(162, 69, "Water");
+    console.log(all_attacks);
+
+    if (fetching)
+    {
+        document.querySelector(".fetch").innerHTML = "";
+    }
 }
 get_info();
-
-const element = document.querySelector(".first");
-element.addEventListener("keydown", function(event)
+let fetching = false;
+function poke_search_bars()
 {
-    if (event.key == "Enter" || event.key == "Tab")
+    document.querySelector(".prep_buttons").innerHTML = "";
+
+    const div_class = document.querySelector(".inputs");
+    div_class.innerHTML += "<input class = 'first' placeholder = 'Enter your pokemon name' type = 'tekst'/>";
+    div_class.innerHTML += "<input class = 'second' placeholder = 'Enter your enemy pokemon name' type = 'tekst'/>"
+
+    const element = document.querySelector(".first");
+    element.addEventListener("keydown", function(event)
     {
-        let name = 
-        event.target.value.charAt(0).toUpperCase()
-        + event.target.value.substring(1).toLowerCase();
+        if (event.key == "Enter" || event.key == "Tab")
+        {
+            let name = 
+            event.target.value.charAt(0).toUpperCase()
+            + event.target.value.substring(1).toLowerCase();
 
-        
-        main(name, info, ".input_card");
-    }
-});
+            
+            main(name, info, ".input_card");
+        }
+    });
 
-const element_1 = document.querySelector(".second");
-element_1.addEventListener("keydown", function(event)
-{
-    if (event.key == "Enter" || event.key == "Tab")
+    const element_1 = document.querySelector(".second");
+    element_1.addEventListener("keydown", function(event)
     {
-        let name = 
-        event.target.value.charAt(0).toUpperCase()
-        + event.target.value.substring(1).toLowerCase();
+        if (event.key == "Enter" || event.key == "Tab")
+        {
+            let name = 
+            event.target.value.charAt(0).toUpperCase()
+            + event.target.value.substring(1).toLowerCase();
 
-        main(name, info, ".second_card");
+            main(name, info, ".second_card");
+        }
+    });
+
+    if (info == undefined)
+    {
+        fetching = true;
+        document.querySelector(".fetch").innerHTML = "Fetching data...";
     }
-});
-
+}
 
 
 async function main(pokemon, data, id) 
@@ -143,6 +149,8 @@ async function main(pokemon, data, id)
 let pokemon_1_num;
 let pokemon_2_num;
 
+let created_lobby = false;
+
 let image_element = document.querySelector(".input_card");
 image_element.addEventListener("click", function(event)
 {
@@ -151,7 +159,15 @@ image_element.addEventListener("click", function(event)
         pokemon_1_num = first_nums[event.target.id];
         if(pokemon_2_num != undefined)
         {
-            battle_prep();
+            if (created_lobby)
+            {
+                ip_setup(true);
+                document.querySelector(".all").innerHTML = "";
+            }
+            else
+            {
+                battle_prep();
+            }
         }
     }
 });
@@ -164,16 +180,22 @@ image_element_1.addEventListener("click", function(event)
         pokemon_2_num = second_nums[event.target.id];
         if(pokemon_1_num != undefined)
         {
-            battle_prep();
+            if (created_lobby)
+            {
+                ip_setup(true);
+                document.querySelector(".all").innerHTML = "";
+            }
+            else
+            {
+                battle_prep();
+            }
         }
     }
 });
 
 function battle_prep()
 {
-    document.querySelector(".all").innerHTML = "";
-
-    const buttons = document.querySelector(".prep_buttons");
+   const buttons = document.querySelector(".prep_buttons");
 
     buttons.innerHTML = "<input type = 'button' class = "+
     "'prep_buttons' id = 'prep_left' value = 'Join game'/>";
@@ -182,16 +204,25 @@ function battle_prep()
 
     buttons.addEventListener("click", function(event) 
     {
-        if (event.target.id == "prep_left")
+        if (info != undefined)
         {
-            ip_setup(false);
-        }
-        else
+            if (event.target.id == "prep_left")
+            {
+                ip_setup(false);
+            }
+            else
+            {
+                poke_search_bars();
+                created_lobby = true;
+            }
+        } else
         {
-            ip_setup(true);
+            fetching = true;
+            document.querySelector(".fetch").innerHTML = "Fetching data...";
         }
     });
 }
+battle_prep();
 
 function ip_setup(create)
 {
@@ -200,16 +231,16 @@ function ip_setup(create)
     const ip_prep = document.querySelector(".prep_ip")
     if (create)
     {
-        ip_prep.innerHTML = "<input type = 'text' placeholder = 'Enter new ip' class = 'prep_ip'/>";
+        ip_prep.innerHTML = "<input type = 'text' placeholder = 'Enter new ip' class = 'prepare_ip' id = 'prepare_ip'/>";
     }
     else
     {
-        ip_prep.innerHTML = "<input type = 'text' placeholder = 'Enter ip' class = 'prep_ip'/>";
+        ip_prep.innerHTML = "<input type = 'text' placeholder = 'Enter ip' class = 'prepare_ip' id = 'prepare_ip'/>";
     }
 
-    ip_prep.addEventListener("key_down", function(event)
+    document.getElementById("prepare_ip").addEventListener("keydown", function(event)
     {
-        if (event.target.key == "Enter")
+        if (event.key == "Enter")
         {
             load_battle(event.target.value, create, false) 
         }
@@ -219,6 +250,8 @@ function ip_setup(create)
 let url;
 async function load_battle(ip, create, created)
 {
+    console.log(ip);
+    let found = false;
     const searching_url = "https://kool.krister.ee/chat/ants_pokemon_search_ip_" + ip;
     if (create)
     {
@@ -242,10 +275,12 @@ async function load_battle(ip, create, created)
         const response = await fetch(searching_url);
         const data = await response.json();
 
-        if (data.available == undefined)
+        const num = data.length - 1;
+        if (data[num].available == false)
         {
-            start_battle();
             url = searching_url;
+            found = true;
+            start_battle();
         }
     }
     else
@@ -253,25 +288,37 @@ async function load_battle(ip, create, created)
         const response = await fetch(searching_url);
         const data = await response.json();
 
-        if (data.available != undefined)
+        const num = data.length - 1;
+        if (data[num].available != undefined)
         {
-            if (data.available = true)
+            if (data[num].available == true)
             {
-                fetch(searching_url, 
-                {
-                    method: "DELETE",
-                })
-                start_battle();
                 url = searching_url;
+                found = true;
+                start_battle();
+                const info = {
+                    available: false,
+                }
+                fetch(url,
+                {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(info)
+                });
             }
         }
+    }
+    if (!found)
+    {
+        setTimeout(load_battle, 1000, ip, create, created);
     }
 }
 
 const moves = 
 {
-    "Second Strike": "if(hp < hp_max)" +
-    "{deal_damage()}",
+    "Second Strike": function(){},
 }
 
 let def = [0, 0];
@@ -281,7 +328,6 @@ let post_turn_effect;
 let damage;
 
 let first_abilties = [];
-let second_abilities = [];
 const ability_colors = 
 {
     Fire: "red",
@@ -365,7 +411,7 @@ function deal_damage(target, damage, atk_type)
     {
         damage *= type_calculation(atk_type.toLowerCase(), item.toLowerCase());
     }
-    console.log(damage)
+    hp -= damage;
 }
 
 function type_calculation(type_1, type_2)
@@ -380,47 +426,161 @@ function type_calculation(type_1, type_2)
     }
 }
 
+let started_battle = false;
 async function start_battle()
 {
-    let a = 0;
-    for(item of info.data[pokemon_2_num].attacks)
+    let downloaded = false;
+    if(created_lobby)
     {
-        second_abilities[a] = item;
-        a++;
-    }
+            let a = 0;
+            for(item of info.data[pokemon_1_num].attacks)
+            {
+                first_abilties[a] = item;
+                a++;
+            }
+            
+            const info = {
+                pokemon_1_num: pokemon_1_num,
+                pokemon_2_num: pokemon_2_num,
+                creator_move: true,
+                cr_moved: false, // cr = creator
+                en_moved: false, // en = enemy
+                cr_action: "",
+                en_action: "",
+            }
 
-    a = 0;
-    for(item of info.data[pokemon_1_num].attacks)
+            hp_max = info.data[pokemon_1_num].hp;
+            hp = hp_max;
+
+            fetch(url,
+                {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(info)
+                }
+            )
+        }
+        else
+        {
+            downloaded = data_download();
+        }
+
+
+        if (downloaded)
+        {
+        document.querySelector(".all").innerHTML = "";
+        const l_button = document.querySelector(".left_button");
+        const r_button = document.querySelector(".right_button");
+        console.log(first_abilties[0].cost[0]);
+
+        document.querySelector(".left_image").innerHTML = "<img src='" + info.data[pokemon_1_num].images.small + "'/>";
+        document.querySelector(".right_image").innerHTML = "<img src='" + info.data[pokemon_2_num].images.small + "'/>";
+
+        if(first_abilties[0] != undefined)
+        {
+            l_button.innerHTML += "<input class='left' id='left' type = 'button' value='" 
+            + first_abilties[0].name + "'/>";
+            document.getElementById("left").style.backgroundColor =
+            ability_colors[first_abilties[0].cost[0]];    
+        }
+
+        if (first_abilties[1] != undefined)
+        {
+            r_button.innerHTML += "<input class='right' id='right' type = 'button' value='" 
+            + first_abilties[1].name + "'/>";
+            document.getElementById("right").style.backgroundColor =
+            ability_colors[first_abilties[1].cost[0]];
+        }
+        started_battle = true;
+    }
+}
+
+async function data_download()
+{
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log(data);
+
+
+    pokemon_1_num = data.pokemon_1_num;
+    pokemon_2_num = data.pokemon_2_num;
+
+    for(item of info.data[pokemon_2_num].attacks)
     {
         first_abilties[a] = item;
         a++;
     }
 
-    const response = await fetch(url);
-    const data = await response.json();
+    hp_max = info.data[pokemon_2_num].hp;
+    hp = hp_max;
 
-
-    document.querySelector(".all").innerHTML = "";
-    const l_button = document.querySelector(".left_button");
-    const r_button = document.querySelector(".right_button");
-    console.log(first_abilties[0].cost[0]);
-
-    document.querySelector(".left_image").innerHTML = "<img src='" + info.data[pokemon_1_num].images.small + "'/>";
-    document.querySelector(".right_image").innerHTML = "<img src='" + info.data[pokemon_2_num].images.small + "'/>";
-
-    if(first_abilties[0] != undefined)
+    if (data != undefined)
     {
-        l_button.innerHTML += "<input class='left' id='left' type = 'button' value='" 
-        + first_abilties[0].name + "'/>";
-        document.getElementById("left").style.backgroundColor =
-        ability_colors[first_abilties[0].cost[0]];    
+        return true;
     }
-
-    if (first_abilties[1] != undefined)
+    else
     {
-        r_button.innerHTML += "<input class='right' id='right' type = 'button' value='" 
-        + first_abilties[1].name + "'/>";
-        document.getElementById("right").style.backgroundColor =
-        ability_colors[first_abilties[1].cost[0]];
+        return false;
     }
 }
+
+async function battle() 
+{
+    if (started_battle)
+    {
+        const response = await fetch(url);
+        const raw_data = await response.json();
+        const data = raw_data[raw_data.length - 1];
+
+        if (created_lobby)
+        {
+            if (data.en_moved)
+            {
+                if (moves[data.en_action] != undefined)
+                {
+                    moves[data.en_action]();
+                }
+                else
+                {
+                    for(item of all_attacks.data)
+                    {
+                        for(attack of item)
+                        {
+                            if (attack.name == data.en_action)
+                            {
+                                deal_damage(pokemon_1_num, attack.damage, attack.cost[0]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (data.cr_moved)
+            {
+                if (moves[data.en_action] != undefined)
+                {
+                    moves[data.en_action]();
+                }
+                else
+                {
+                    for(item of all_attacks.data)
+                    {
+                        for(attack of item)
+                        {
+                            if (attack.name == data.en_action)
+                            {
+                                deal_damage(pokemon_1_num, attack.damage, attack.cost[0]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+setInterval(battle, 500);
