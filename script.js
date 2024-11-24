@@ -197,10 +197,10 @@ function battle_prep()
 {
    const buttons = document.querySelector(".prep_buttons");
 
-    buttons.innerHTML = "<input type = 'button' class = "+
+    /*buttons.innerHTML = "<input type = 'button' class = "+
     "'prep_buttons' id = 'prep_left' value = 'Join game'/>";
     buttons.innerHTML += "<input type = 'button' class = "+
-    "'prep_buttons' id = 'prep_right' value = 'Create game'/>";
+    "'prep_buttons' id = 'prep_right' value = 'Create game'/>";*/
 
     buttons.addEventListener("click", function(event) 
     {
@@ -210,7 +210,7 @@ function battle_prep()
             {
                 ip_setup(false);
             }
-            else
+            else if (event.target.id == "prep_right")
             {
                 poke_search_bars();
                 created_lobby = true;
@@ -238,11 +238,42 @@ function ip_setup(create)
         ip_prep.innerHTML = "<input type = 'text' placeholder = 'Enter ip' class = 'prepare_ip' id = 'prepare_ip'/>";
     }
 
-    document.getElementById("prepare_ip").addEventListener("keydown", function(event)
+    document.getElementById("prepare_ip").addEventListener("keydown", async function(event)
     {
         if (event.key == "Enter")
         {
-            load_battle(event.target.value, create, false) 
+            let can_battle = false;
+            let empty_ip = true;
+            const response = await fetch("https://kool.krister.ee/chat/ants_pokemon_search_ip_" + event.target.value);
+            const raw_data = response.json();
+            const data = raw_data[raw_data.length-1];
+
+            if (data.ended_game != undefined && data.ended_game == true)
+            {
+                can_battle = true;
+            }
+            
+            for(const item of raw_data)
+            {
+                if (item.ended_game != undefined)
+                {
+                    if(item.ended_game == true)
+                    {can_battle = true;}
+                    else {empty_ip = false;}
+                }
+            }
+            if(empty_ip)
+            {
+                can_battle = true;
+            }
+
+            if (can_battle)
+            {
+                load_battle(event.target.value, create, false) 
+            } else
+            {
+                document.querySelector(".no_join").innerHTML = "<p class='no_join_text'> You can't join that IP </p>"
+            }
         }
     });
 }
@@ -255,7 +286,7 @@ async function load_battle(ip, create, created)
     const searching_url = "https://kool.krister.ee/chat/ants_pokemon_search_ip_" + ip;
     if (create)
     {
-        const info = 
+        const _info = 
         {
             available: true,
         }
@@ -265,7 +296,7 @@ async function load_battle(ip, create, created)
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(info)
+            body: JSON.stringify(_info)
         });
         create = false;
         created = true;
@@ -296,7 +327,7 @@ async function load_battle(ip, create, created)
                 url = searching_url;
                 found = true;
                 start_battle();
-                const info = {
+                const _info = {
                     available: false,
                 }
                 fetch(url,
@@ -305,7 +336,7 @@ async function load_battle(ip, create, created)
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(info)
+                    body: JSON.stringify(_info)
                 });
             }
         }
@@ -318,7 +349,7 @@ async function load_battle(ip, create, created)
 
 const moves = 
 {
-    "Second Strike": function(){},
+    
 }
 
 let def = [0, 0];
@@ -350,27 +381,27 @@ const ability_colors =
     Fairy: "pink"
 }
 const type_chart = {
-    normal:   { rock: 0.5, ghost: 0, steel: 0.5 },
-    fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
+    normal:   { rock: 0.5, ghost: 0, metal: 0.5 },
+    fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, metal: 2 },
     water:    { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
     electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
-    grass:    { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, steel: 0.5 },
-    ice:      { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, steel: 0.5 },
-    fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, dark: 2, steel: 2, fairy: 0.5 },
-    poison:   { grass: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0, fairy: 2 },
-    ground:   { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, steel: 2 },
-    flying:   { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5, steel: 0.5 },
-    psychic:  { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
-    bug:      { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5, fairy: 0.5 },
-    rock:     { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, steel: 0.5 },
+    grass:    { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, metal: 0.5 },
+    ice:      { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, metal: 0.5 },
+    fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, dark: 2, metal: 2, fairy: 0.5 },
+    poison:   { grass: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, metal: 0, fairy: 2 },
+    ground:   { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, metal: 2 },
+    flying:   { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5, metal: 0.5 },
+    psychic:  { fighting: 2, poison: 2, psychic: 0.5, dark: 0, metal: 0.5 },
+    bug:      { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, metal: 0.5, fairy: 0.5 },
+    rock:     { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, metal: 0.5 },
     ghost:    { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
-    dragon:   { dragon: 2, steel: 0.5, fairy: 0 },
+    dragon:   { dragon: 2, metal: 0.5, fairy: 0 },
     dark:     { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
-    steel:    { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5, fairy: 2 },
-    fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
+    metal:    { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, metal: 0.5, fairy: 2 },
+    fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, metal: 0.5 }
 };
 
-function deal_damage(target, damage, atk_type)
+function deal_damage(target, damage, atk_type, want_num)
 {
     if (target == pokemon_1_num)
     {
@@ -411,13 +442,21 @@ function deal_damage(target, damage, atk_type)
     {
         damage *= type_calculation(atk_type.toLowerCase(), item.toLowerCase());
     }
-    hp -= damage;
+    if (!want_num)
+    {
+        hp -= (damage / 2);
+    }
+    else
+    {
+        return damage / 2;
+    }
 }
 
 function type_calculation(type_1, type_2)
 {
     if (type_chart[type_1][type_2] != undefined)
     {
+        console.log(type_chart[type_1][type_2])
         return type_chart[type_1][type_2];
     }
     else
@@ -427,53 +466,94 @@ function type_calculation(type_1, type_2)
 }
 
 let started_battle = false;
+
+let player_moved = false;
+let player_move;
+let can_move = false;
+
+
+
+let update_info =
+{
+    creator_move: true,
+    cr_moved: false, // cr = creator
+    en_moved: false, // en = enemy
+    cr_action: "",
+    en_action: "",
+    cr_hp: hp,
+    en_hp: hp,
+    ended_game: false,
+}
+
+const moveable = document.querySelector(".can_move");
+
 async function start_battle()
 {
-    let downloaded = false;
     if(created_lobby)
     {
-            let a = 0;
-            for(item of info.data[pokemon_1_num].attacks)
+        can_move = true;
+        let a = 0;
+        for(item of info.data[pokemon_1_num].attacks)
+        {
+            first_abilties[a] = item;
+            a++;
+        }
+        
+        hp_max = info.data[pokemon_1_num].hp;
+        hp = hp_max;
+
+        const _info = {
+            pokemon_1_num: pokemon_1_num,
+            pokemon_2_num: pokemon_2_num,
+            creator_move: true,
+            cr_moved: false, // cr = creator
+            en_moved: false, // en = enemy
+            cr_action: "",
+            en_action: "",
+            cr_hp: hp,
+            en_hp: info.data[pokemon_2_num].hp
+        }
+
+        update_info.cr_hp = _info.cr_hp;
+        update_info.en_hp = _info.en_hp;
+
+        fetch(url,
             {
-                first_abilties[a] = item;
-                a++;
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(_info)
             }
-            
-            const info = {
-                pokemon_1_num: pokemon_1_num,
-                pokemon_2_num: pokemon_2_num,
-                creator_move: true,
-                cr_moved: false, // cr = creator
-                en_moved: false, // en = enemy
-                cr_action: "",
-                en_action: "",
-            }
+        )
+    }
+    else
+    {
+        can_move = false;
+        data_download();
+    }
 
-            hp_max = info.data[pokemon_1_num].hp;
-            hp = hp_max;
-
-            fetch(url,
-                {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(info)
-                }
-            )
+    if (first_abilties != "")
+    {
+        const hp_info = document.querySelector(".hp_info");
+        hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + info.data[pokemon_1_num].hp + "</p>";
+        hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + info.data[pokemon_2_num].hp + "</p>";
+        
+        if (can_move)
+        {
+            moveable.innerHTML = "<p class='can_move_p'> Can move: true </p>"
         }
         else
         {
-            downloaded = data_download();
+            moveable.innerHTML = "<p class='can_move_p'> Can move: false </p>"
         }
 
-
-        if (downloaded)
-        {
+        document.querySelector(".prep_ip").innerHTML = "";
         document.querySelector(".all").innerHTML = "";
+
         const l_button = document.querySelector(".left_button");
         const r_button = document.querySelector(".right_button");
-        console.log(first_abilties[0].cost[0]);
+        const m_button = document.querySelector(".middle_button");
 
         document.querySelector(".left_image").innerHTML = "<img src='" + info.data[pokemon_1_num].images.small + "'/>";
         document.querySelector(".right_image").innerHTML = "<img src='" + info.data[pokemon_2_num].images.small + "'/>";
@@ -483,40 +563,92 @@ async function start_battle()
             l_button.innerHTML += "<input class='left' id='left' type = 'button' value='" 
             + first_abilties[0].name + "'/>";
             document.getElementById("left").style.backgroundColor =
-            ability_colors[first_abilties[0].cost[0]];    
+            ability_colors[first_abilties[0].cost[0]];
+            document.querySelector(".left").addEventListener("click", function(event)
+            {
+                if (can_move)
+                {
+                    player_move = first_abilties[0];
+                    player_moved = true;
+                    can_move = false;
+                    let target = "";
+                    if(created_lobby){target = pokemon_2_num}
+                    else{target = pokemon_1_num}
+                    display_damage_enemy = deal_damage(target, player_move.damage, player_move.cost[0], true);
+                }
+            });
         }
-
         if (first_abilties[1] != undefined)
         {
             r_button.innerHTML += "<input class='right' id='right' type = 'button' value='" 
             + first_abilties[1].name + "'/>";
             document.getElementById("right").style.backgroundColor =
             ability_colors[first_abilties[1].cost[0]];
+            document.querySelector(".right").addEventListener("click", function(event)
+            {
+                if (can_move)
+                {
+                    player_move = first_abilties[1];
+                    player_moved = true;
+                    can_move = false;
+                    if(created_lobby){target = pokemon_2_num}
+                    else{target = pokemon_1_num}
+                    display_damage_enemy = deal_damage(target, player_move.damage, player_move.cost[0], true);
+                }
+            });
+        }
+        if (first_abilties[2] != undefined)
+        {
+            m_button.innerHTML += "<input class='middle' id='middle' type = 'button' value='" 
+            + first_abilties[1].name + "'/>";
+            document.getElementById("middle").style.backgroundColor =
+            ability_colors[first_abilties[2].cost[0]];
+            document.querySelector(".middle").addEventListener("click", function(event)
+            {
+                if (can_move)
+                {
+                    player_move = first_abilties[2];
+                    player_moved = true;
+                    can_move = false;
+                    if(created_lobby){target = pokemon_2_num}
+                    else{target = pokemon_1_num}
+                    display_damage_enemy = deal_damage(target, player_move.damage, player_move.cost[0], true);
+                }
+            });
         }
         started_battle = true;
     }
+    else
+    {
+        setTimeout(start_battle, 1000)
+    }
 }
+
+
 
 async function data_download()
 {
     const response = await fetch(url);
     const data = await response.json();
-    console.log(data);
 
-
-    pokemon_1_num = data.pokemon_1_num;
-    pokemon_2_num = data.pokemon_2_num;
-
-    for(item of info.data[pokemon_2_num].attacks)
+    const num = data.length - 1;
+    if (data[num].pokemon_1_num != undefined)
     {
-        first_abilties[a] = item;
-        a++;
+        pokemon_1_num = data[num].pokemon_1_num;
+        pokemon_2_num = data[num].pokemon_2_num;
+
+        let a = 0;
+        for(item of info.data[pokemon_2_num].attacks)
+        {
+            first_abilties[a] = item;
+            a++;
+        }
+
+        hp_max = info.data[pokemon_2_num].hp;
+        hp = hp_max;
     }
 
-    hp_max = info.data[pokemon_2_num].hp;
-    hp = hp_max;
-
-    if (data != undefined)
+    if (first_abilties != undefined)
     {
         return true;
     }
@@ -526,6 +658,12 @@ async function data_download()
     }
 }
 
+let old_player_moved = false;
+let old_player_move = "";
+
+let display_damage = 0;
+let display_damage_enemy = 0;
+
 async function battle() 
 {
     if (started_battle)
@@ -533,6 +671,29 @@ async function battle()
         const response = await fetch(url);
         const raw_data = await response.json();
         const data = raw_data[raw_data.length - 1];
+
+        update_info =
+        {
+            cr_moved: false, // cr = creator
+            en_moved: false, // en = enemy
+            cr_action: "",
+            en_action: "",
+            cr_hp: data.cr_hp,
+            en_hp: data.en_hp,
+            creator_move: data.creator_move,
+            ended_game: false
+        }
+
+        if (created_lobby)
+        {
+            update_info.cr_hp = hp;
+        }
+        else
+        {
+            update_info.en_hp = hp;
+        }
+
+        
 
         if (created_lobby)
         {
@@ -544,18 +705,15 @@ async function battle()
                 }
                 else
                 {
-                    for(item of all_attacks.data)
-                    {
-                        for(attack of item)
-                        {
-                            if (attack.name == data.en_action)
-                            {
-                                deal_damage(pokemon_1_num, attack.damage, attack.cost[0]);
-                            }
-                        }
-                    }
+                    deal_damage(pokemon_1_num, data.en_action.damage, data.en_action.cost[0], false);
+                    display_damage = deal_damage(pokemon_1_num, data.en_action.damage, data.en_action.cost[0], true);
+                    update_info.en_moved = false;
                 }
             }
+
+            if (data.creator_move && !player_moved){can_move = true;}
+            else if (!player_moved){can_move = false;}
+            update_info.cr_hp = hp;
         }
         else
         {
@@ -566,19 +724,165 @@ async function battle()
                     moves[data.en_action]();
                 }
                 else
-                {
-                    for(item of all_attacks.data)
-                    {
-                        for(attack of item)
-                        {
-                            if (attack.name == data.en_action)
-                            {
-                                deal_damage(pokemon_1_num, attack.damage, attack.cost[0]);
-                            }
-                        }
-                    }
+                { 
+                    deal_damage(pokemon_2_num, data.cr_action.damage, data.cr_action.cost[0], false);
+                    display_damage = deal_damage(pokemon_2_num, data.cr_action.damage, data.cr_action.cost[0], true);
+                    update_info.cr_moved = false;
                 }
             }
+
+            if (data.creator_move && !player_moved){can_move = false;}
+            else if (!player_moved){can_move = true;}
+            update_info.en_hp = hp;
+        }
+
+        if (can_move)
+        {
+            moveable.innerHTML = "<p class='can_move_p'> Can move: true </p>"
+        }
+        else
+        {
+            moveable.innerHTML = "<p class='can_move_p'> Can move: false </p>"
+        }
+
+        if (player_moved)
+        {
+            if(created_lobby)
+            {
+                update_info.cr_moved = true;
+                update_info.cr_action = player_move;
+                update_info.creator_move = false;
+            }
+            else
+            {
+                update_info.en_moved = true;
+                update_info.en_action = player_move;
+                update_info.creator_move = true;
+            }
+        }
+        let enemy_hp = update_info.en_hp;
+        if (created_lobby && player_moved)
+        {
+            enemy_hp -= deal_damage(pokemon_2_num, update_info.cr_action.damage, update_info.cr_action.cost[0], true);
+        }
+        else if (created_lobby && old_player_moved && !data.creator_move)
+        {
+            enemy_hp -= deal_damage(pokemon_2_num, old_player_move.damage, old_player_move.cost[0], true);
+        }
+
+        const hp_info = document.querySelector(".hp_info");
+        hp_info.innerHTML = "";
+        if (display_damage <= 0)
+        {
+            hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + update_info.cr_hp + "</p>";
+            hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + enemy_hp + "</p>";
+        }
+        else
+        {
+            const cr_health = update_info.cr_hp + display_damage;
+            const en_health = enemy_hp + display_damage;
+
+            if (data.en_moved)
+            {
+                hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + cr_health + " - " + display_damage + "</p>";
+                hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + enemy_hp + "</p>";
+            }
+            else
+            {
+                hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + update_info.cr_hp + "</p>";
+                hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + en_health + " - " + display_damage + "</p>";
+            }
+            
+            display_damage = 0;
+        }
+
+        if (display_damage_enemy > 0)
+        {
+            hp_info.innerHTML = "";
+            const cr_health = update_info.cr_hp + display_damage_enemy;
+            const en_health = enemy_hp + display_damage_enemy;
+
+            if (!created_lobby)
+            {
+                hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + cr_health + " - " + display_damage_enemy + "</p>";
+                hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + enemy_hp + "</p>";
+            }
+            else
+            {
+                hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + update_info.cr_hp + "</p>";
+                hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + en_health + " - " + display_damage_enemy + "</p>";
+            }
+            
+            display_damage_enemy = 0;
+        }
+
+        if (update_info.cr_hp <= 0)
+        {
+            const win = document.querySelector(".everything");
+            if(created_lobby)
+            {
+                win.innerHTML = "<h1 class='victory'> YOU LOSE! </h1>";
+                update_info.ended_game = true;
+            }
+            else
+            {
+                win.innerHTML = "<h1 class='victory'> YOU WIN! </h1>";
+                update_info.ended_game = true;
+            }
+        }
+        if (enemy_hp <= 0 || update_info.en_hp <= 0)
+        {
+            const win = document.querySelector(".everything");
+            if(created_lobby)
+            {
+                win.innerHTML = "<h1 class='victory'> YOU WIN! </h1>";
+                update_info.ended_game = true;
+            }
+            else
+            {
+                win.innerHTML = "<h1 class='victory'> YOU LOSE! </h1>";
+                update_info.ended_game = true;
+            }
+        }
+
+        if (update_info.cr_hp <= 0 || update_info.en_hp <= 0)
+        {
+            update_info.cr_moved = false;
+            update_info.en_moved = false;
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(update_info),
+            });
+        }
+
+        if ((data.cr_moved || data.en_moved) && created_lobby)
+        {
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(update_info),
+            });
+        }
+        else if (player_moved)
+        {
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(update_info),
+            });
+            old_player_move = player_move;
+            old_player_moved = player_moved;
+            
+            player_moved = false;
+            player_move = "";
         }
     }
 }
