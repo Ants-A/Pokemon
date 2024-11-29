@@ -243,33 +243,29 @@ function ip_setup(create)
         if (event.key == "Enter")
         {
             let can_battle = false;
-            let empty_ip = true;
-            const response = await fetch("https://kool.krister.ee/chat/ants_pokemon_search_ip_" + event.target.value);
+            const response = await fetch("https://kool.krister.ee/chat/ants_pokemon_search_ip" + event.target.value);
             const raw_data = response.json();
             const data = raw_data[raw_data.length-1];
 
-            if (data.ended_game != undefined && data.ended_game == true)
-            {
-                can_battle = true;
-            }
-            
-            for(const item of raw_data)
-            {
-                if (item.ended_game != undefined)
+            if (raw_data != undefined && data != undefined)
+            { 
+                if (data.ended_game === true)
                 {
-                    if(item.ended_game == true)
-                    {can_battle = true;}
-                    else {empty_ip = false;}
+                    can_battle = true;
+                }
+                else 
+                {
+                    can_battle = false;
                 }
             }
-            if(empty_ip)
+            else
             {
                 can_battle = true;
             }
 
             if (can_battle)
             {
-                load_battle(event.target.value, create, false) 
+                load_battle(event.target.value, create, created_lobby) 
             } else
             {
                 document.querySelector(".no_join").innerHTML = "<p class='no_join_text'> You can't join that IP </p>"
@@ -283,7 +279,7 @@ async function load_battle(ip, create, created)
 {
     console.log(ip);
     let found = false;
-    const searching_url = "https://kool.krister.ee/chat/ants_pokemon_search_ip_" + ip;
+    const searching_url = "https://kool.krister.ee/chat/ants_pokemon_search_ip" + ip;
     if (create)
     {
         const _info = 
@@ -664,6 +660,15 @@ let old_player_move = "";
 let display_damage = 0;
 let display_damage_enemy = 0;
 
+let en_dead = false;
+let cr_dead = false;
+
+const card_x_starting_pos = 0;
+const card_y_starting_pos = 35;
+
+let shake = false;
+let shake_cr = false;
+
 async function battle() 
 {
     if (started_battle)
@@ -671,6 +676,35 @@ async function battle()
         const response = await fetch(url);
         const raw_data = await response.json();
         const data = raw_data[raw_data.length - 1];
+
+        if (cr_dead)
+        {
+            const win = document.querySelector(".everything");
+            if(created_lobby)
+            {
+                win.innerHTML = "<h1 class='victory'> YOU LOSE! </h1>";
+                update_info.ended_game = true;
+            }
+            else
+            {
+                win.innerHTML = "<h1 class='victory'> YOU WIN! </h1>";
+                update_info.ended_game = true;
+            }
+        }
+        else if (en_dead)
+        {
+            const win = document.querySelector(".everything");
+            if(created_lobby)
+            {
+                win.innerHTML = "<h1 class='victory'> YOU WIN! </h1>";
+                update_info.ended_game = true;
+            }
+            else
+            {
+                win.innerHTML = "<h1 class='victory'> YOU LOSE! </h1>";
+                update_info.ended_game = true;
+            }
+        }
 
         update_info =
         {
@@ -776,6 +810,8 @@ async function battle()
         {
             hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + update_info.cr_hp + "</p>";
             hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + enemy_hp + "</p>";
+            
+            shake = false;
         }
         else
         {
@@ -786,63 +822,53 @@ async function battle()
             {
                 hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + cr_health + " - " + display_damage + "</p>";
                 hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + enemy_hp + "</p>";
+
+                shake_cr = true;
             }
             else
             {
                 hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + update_info.cr_hp + "</p>";
                 hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + en_health + " - " + display_damage + "</p>";
+
+                shake_cr = false;
             }
             
             display_damage = 0;
+            shake = true;
         }
 
         if (display_damage_enemy > 0)
         {
             hp_info.innerHTML = "";
-            const cr_health = update_info.cr_hp + display_damage_enemy;
+            const cr_health = update_info.cr_hp;
             const en_health = enemy_hp + display_damage_enemy;
 
             if (!created_lobby)
             {
                 hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + cr_health + " - " + display_damage_enemy + "</p>";
                 hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + enemy_hp + "</p>";
+
+                shake_cr = true;
             }
             else
             {
                 hp_info.innerHTML += "<p class = 'creator_hp'> Hp: " + update_info.cr_hp + "</p>";
                 hp_info.innerHTML += "<p class = 'enemy_hp'> Hp: " + en_health + " - " + display_damage_enemy + "</p>";
+
+                shake_cr = false;
             }
             
             display_damage_enemy = 0;
+            shake = true;
         }
 
         if (update_info.cr_hp <= 0)
         {
-            const win = document.querySelector(".everything");
-            if(created_lobby)
-            {
-                win.innerHTML = "<h1 class='victory'> YOU LOSE! </h1>";
-                update_info.ended_game = true;
-            }
-            else
-            {
-                win.innerHTML = "<h1 class='victory'> YOU WIN! </h1>";
-                update_info.ended_game = true;
-            }
+            cr_dead = true;
         }
         if (enemy_hp <= 0 || update_info.en_hp <= 0)
         {
-            const win = document.querySelector(".everything");
-            if(created_lobby)
-            {
-                win.innerHTML = "<h1 class='victory'> YOU WIN! </h1>";
-                update_info.ended_game = true;
-            }
-            else
-            {
-                win.innerHTML = "<h1 class='victory'> YOU LOSE! </h1>";
-                update_info.ended_game = true;
-            }
+            en_dead = true;
         }
 
         if (update_info.cr_hp <= 0 || update_info.en_hp <= 0)
@@ -884,7 +910,72 @@ async function battle()
             player_moved = false;
             player_move = "";
         }
+        else if (cr_dead || en_dead)
+        {
+            update_info.ended_game = true;
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(update_info),
+            });
+        }
     }
 }
 
-setInterval(battle, 500);
+setInterval(battle, 1000);
+
+function shaking()
+{
+    if (shake)
+    {
+        const magnitude = 15;
+
+        const new_x_pos = Math.floor(Math.random() * magnitude);
+        const new_y_pos = Math.floor(Math.random() * magnitude);
+
+        console.log("Ran shaking! x = " + new_x_pos + " and y = " + new_y_pos);
+
+        const plus_or_minus = Math.floor(Math.random() * 1);
+
+        document.querySelector(".left_image").style.position = "absolute";
+        document.querySelector(".right_image").style.position = "absolute";
+
+        if (plus_or_minus == 0)
+        {
+            if (shake_cr)
+            {
+                document.querySelector(".left_image").style.left = new_x_pos;
+                document.querySelector(".left_image").style.top = card_y_starting_pos + new_y_pos;
+            }
+            else
+            {
+                document.querySelector(".right_image").style.right = new_x_pos;
+                document.querySelector(".right_image").style.top = card_y_starting_pos + new_y_pos;
+            }
+        }
+        else
+        {
+            if (shake_cr)
+            {
+                document.querySelector(".left_image").style.left = new_x_pos * (-1);
+                document.querySelector(".left_image").style.top = card_y_starting_pos + new_y_pos * (-1);
+            }
+            else
+            {
+                document.querySelector(".right_image").style.right = new_x_pos * (-1);
+                document.querySelector(".right_image").style.top = card_y_starting_pos - new_y_pos;
+            }
+        }
+    }
+    else
+    {
+        document.querySelector(".left_image").style.left = card_x_starting_pos;
+        document.querySelector(".right_image").style.right = card_x_starting_pos;
+        document.querySelector(".left_image").style.top = card_y_starting_pos;
+        document.querySelector(".right_image").style.top = card_y_starting_pos;
+    }
+}
+
+setInterval(shaking, 50)
