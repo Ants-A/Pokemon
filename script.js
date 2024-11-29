@@ -224,6 +224,9 @@ function battle_prep()
 }
 battle_prep();
 
+
+
+
 function ip_setup(create)
 {
     document.querySelector(".prep_buttons").innerHTML = "";
@@ -273,6 +276,10 @@ function ip_setup(create)
         }
     });
 }
+
+
+
+
 
 let url;
 async function load_battle(ip, create, created)
@@ -343,10 +350,10 @@ async function load_battle(ip, create, created)
     }
 }
 
-const moves = 
+/*const moves = 
 {
     
-}
+}*/
 
 let def = [0, 0];
 let hp_max;
@@ -469,6 +476,8 @@ let can_move = false;
 
 
 
+
+
 let update_info =
 {
     creator_move: true,
@@ -482,6 +491,10 @@ let update_info =
 }
 
 const moveable = document.querySelector(".can_move");
+
+
+
+
 
 async function start_battle()
 {
@@ -622,6 +635,10 @@ async function start_battle()
 
 
 
+
+
+
+
 async function data_download()
 {
     const response = await fetch(url);
@@ -653,6 +670,10 @@ async function data_download()
         return false;
     }
 }
+
+
+
+
 
 let old_player_moved = false;
 let old_player_move = "";
@@ -726,8 +747,6 @@ async function battle()
         {
             update_info.en_hp = hp;
         }
-
-        
 
         if (created_lobby)
         {
@@ -978,4 +997,4 @@ function shaking()
     }
 }
 
-setInterval(shaking, 50)
+setInterval(shaking, 50);
